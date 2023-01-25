@@ -5,7 +5,7 @@
       <q-btn @click="getBalance" color="accent" label="getBalance" />
       <q-btn @click="withdraw" color="negative" label="Withraw" />
       <br /><br />
-      <q-form @click="onSubmit" class="q-gutter-md">
+      <q-form @click="fund" class="q-gutter-md">
         <q-input filled type="number" v-model="amount" label="Montant" />
 
         <div>
@@ -89,8 +89,9 @@ export default defineComponent({
         console.log('get Balance')
       },
 
-      onSubmit() {
-        console.log('yo', amount.value)
+      fund() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
       },
     }
   },
