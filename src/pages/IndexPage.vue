@@ -2,14 +2,14 @@
   <q-page class="row items-center justify-evenly">
     <div class="q-pa-md q-gutter-sm">
       <q-btn @click="connect" color="secondary" label="Connect Wallet" />
-      <q-btn @click="getBalance" color="accent" label="getBalance" />
-      <q-btn @click="withdraw" color="negative" label="Withraw" />
+      <q-btn @click="getBalance" color="accent" label="Contract Balance" />
+      <q-btn @click="withdraw" color="negative" label="Withdraw" />
       <br /><br />
-      <q-form @click="fund" class="q-gutter-md">
-        <q-input filled type="number" v-model="amount" label="Montant" />
+      <q-form class="q-gutter-md">
+        <q-input filled type="number" v-model="amount" label="Amount" />
 
         <div>
-          <q-btn label="Fund" type="submit" color="primary" />
+          <q-btn label="Fund Contract" @click="fund" color="primary" />
         </div>
       </q-form>
       <q-inner-loading :showing="metamaskLoader">
@@ -33,6 +33,7 @@
 import { defineComponent, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { ethers } from 'ethers'
+import { fundMeAbi, fundMeContractAddress } from '../helpers/hardhatConfig'
 
 export default defineComponent({
   name: 'IndexPage',
@@ -44,10 +45,6 @@ export default defineComponent({
     return {
       amount,
       metamaskLoader,
-
-      withdraw() {
-        console.log('withdraw')
-      },
 
       async connect() {
         const { ethereum } = window
@@ -85,13 +82,91 @@ export default defineComponent({
         }
       },
 
-      getBalance() {
-        console.log('get Balance')
+      async fund() {
+        try {
+          if (!amount.value) {
+            $q.notify({
+              message: 'Select an amount of ETH.',
+              icon: 'warning',
+              color: 'primary',
+            })
+
+            return
+          }
+
+          if (amount.value) {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner()
+            const contract = new ethers.Contract(
+              fundMeContractAddress,
+              fundMeAbi,
+              signer
+            )
+
+            const transactionResponse = await contract.fund({
+              value: ethers.utils.parseEther(amount.value),
+            })
+
+            provider.once(transactionResponse.hash, () => {
+              $q.notify({
+                message: 'Contract funded !',
+                icon: 'warning',
+                color: 'primary',
+              })
+            })
+          }
+        } catch (e) {
+          $q.notify({
+            message: e.message,
+            icon: 'warning',
+            color: 'red',
+          })
+        }
       },
 
-      fund() {
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
+      async getBalance() {
+        const { ethereum } = window
+        if (ethereum !== undefined) {
+          try {
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const balance = await provider.getBalance(fundMeContractAddress)
+            $q.notify({
+              message:
+                'The current contract balance is ' +
+                ethers.utils.formatEther(balance),
+              icon: 'warning',
+              color: 'primary',
+            })
+          } catch (e) {
+            console.log('e ', e)
+          }
+        }
+      },
+
+      async withdraw() {
+        const { ethereum } = window
+        if (ethereum !== undefined) {
+          try {
+            const provider = new ethers.providers.Web3Provider(ethereum)
+            const signer = provider.getSigner()
+            const contract = new ethers.Contract(
+              fundMeContractAddress,
+              fundMeAbi,
+              signer
+            )
+
+            const transactionResponse = await contract.withdraw()
+            provider.once(transactionResponse.hash, () => {
+              $q.notify({
+                message: 'Withdraw completed.',
+                icon: 'warning',
+                color: 'primary',
+              })
+            })
+          } catch (e) {
+            console.log('e ', e)
+          }
+        }
       },
     }
   },
