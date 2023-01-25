@@ -1,7 +1,7 @@
 <template>
   <q-page class="row items-center justify-evenly">
     <div class="q-pa-md q-gutter-sm">
-      <q-btn @click="connect" color="secondary" label="Connect" />
+      <q-btn @click="connect" color="secondary" label="Connect Wallet" />
       <q-btn @click="getBalance" color="accent" label="getBalance" />
       <q-btn @click="withdraw" color="negative" label="Withraw" />
       <br /><br />
@@ -30,60 +30,68 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { defineComponent, ref } from 'vue'
+import { useQuasar } from 'quasar'
 
 export default defineComponent({
   name: 'IndexPage',
   setup() {
-    const amount = ref(null);
-    const metamaskLoader = ref(false);
-    const $q = useQuasar();
+    const amount = ref(null)
+    const metamaskLoader = ref(false)
+    const $q = useQuasar()
 
     return {
       amount,
       metamaskLoader,
 
-      onSubmit() {
-        console.log('yo', amount.value);
-      },
-
       withdraw() {
-        console.log('withdraw');
+        console.log('withdraw')
       },
 
       async connect() {
-        const web3js = window.ethereum;
+        const web3js = window.ethereum
         if (web3js !== undefined) {
           try {
-            metamaskLoader.value = true;
+            metamaskLoader.value = true
             const response = await web3js.request({
               method: 'eth_requestAccounts',
-            });
+            })
 
             if (response.length) {
-              metamaskLoader.value = false;
+              metamaskLoader.value = false
               $q.notify({
                 message: 'Wallet connected !',
                 icon: 'announcement',
                 color: 'green',
-              });
+              })
             }
           } catch (e) {
-            metamaskLoader.value = false;
+            metamaskLoader.value = false
             $q.notify({
               message: e.message,
               icon: 'warning',
               color: 'red',
-            });
+            })
           }
+        }
+
+        if (web3js === undefined) {
+          $q.notify({
+            message: 'Please install Metamask.',
+            icon: 'warning',
+            color: 'primary',
+          })
         }
       },
 
       getBalance() {
-        console.log('get Balance');
+        console.log('get Balance')
       },
-    };
+
+      onSubmit() {
+        console.log('yo', amount.value)
+      },
+    }
   },
-});
+})
 </script>
