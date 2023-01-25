@@ -9,6 +9,7 @@
       />
       <q-btn @click="getBalance" color="primary" label="getBalance" />
       <q-btn @click="withdraw" color="secondary" label="Withraw" />
+      <br /><br />
       <q-form @click="onSubmit" class="q-gutter-md">
         <q-input filled type="number" v-model="amount" label="Montant" />
 
