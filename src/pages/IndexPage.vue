@@ -12,8 +12,18 @@
           <q-btn label="Fund" type="submit" color="primary" />
         </div>
       </q-form>
-      <q-inner-loading :showing="loader">
-        <q-spinner-gears size="50px" color="orange-8" />
+      <q-inner-loading :showing="metamaskLoader">
+        <q-circular-progress
+          indeterminate
+          show-value
+          size="90px"
+          color="orange"
+          track-color="transparent"
+        >
+          <q-avatar>
+            <img :src="require('../assets/metamask-logo.png')" />
+          </q-avatar>
+        </q-circular-progress>
       </q-inner-loading>
     </div>
   </q-page>
@@ -21,16 +31,18 @@
 
 <script>
 import { defineComponent, ref } from 'vue';
+import { useQuasar } from 'quasar';
 
 export default defineComponent({
   name: 'IndexPage',
   setup() {
     const amount = ref(null);
-    const loader = ref(false);
+    const metamaskLoader = ref(false);
+    const $q = useQuasar();
 
     return {
       amount,
-      loader,
+      metamaskLoader,
 
       onSubmit() {
         console.log('yo', amount.value);
@@ -44,16 +56,26 @@ export default defineComponent({
         const web3js = window.ethereum;
         if (web3js !== undefined) {
           try {
-            loader.value = true;
+            metamaskLoader.value = true;
             const response = await web3js.request({
               method: 'eth_requestAccounts',
             });
 
             if (response.length) {
-              loader.value = false;
+              metamaskLoader.value = false;
+              $q.notify({
+                message: 'Wallet connected !',
+                icon: 'announcement',
+                color: 'green',
+              });
             }
           } catch (e) {
-            loader.value = false;
+            metamaskLoader.value = false;
+            $q.notify({
+              message: e.message,
+              icon: 'warning',
+              color: 'red',
+            });
           }
         }
       },
