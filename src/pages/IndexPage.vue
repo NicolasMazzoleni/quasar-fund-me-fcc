@@ -32,6 +32,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { ethers } from 'ethers'
 
 export default defineComponent({
   name: 'IndexPage',
@@ -49,11 +50,11 @@ export default defineComponent({
       },
 
       async connect() {
-        const web3js = window.ethereum
-        if (web3js !== undefined) {
+        const { ethereum } = window
+        if (ethereum !== undefined) {
           try {
             metamaskLoader.value = true
-            const response = await web3js.request({
+            const response = await ethereum.request({
               method: 'eth_requestAccounts',
             })
 
@@ -75,7 +76,7 @@ export default defineComponent({
           }
         }
 
-        if (web3js === undefined) {
+        if (ethereum === undefined) {
           $q.notify({
             message: 'Please install Metamask.',
             icon: 'warning',
